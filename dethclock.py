@@ -439,20 +439,9 @@ class DeathClockGUI:
         time_info_frame = tk.Frame(self.root, bg=SECONDARY_BG, relief='sunken', bd=3)
         time_info_frame.pack(pady=15, padx=20, fill='x')
         
-        # Digital clock display (matrix-style)
-        self.clock_frame = tk.Frame(time_info_frame, bg='#000000', relief='ridge', bd=3)
-        self.clock_frame.pack(pady=20, padx=20, fill='x')
-        
-        clock_title = ttk.Label(self.clock_frame, text="⏱️ TIME REMAINING", font=('Arial', 18, 'bold'),
-                               background='#000000', foreground='#00ff41')
-        clock_title.pack(pady=(15, 10))
-        
-        # Main clock display with enhanced styling
-        self.clock_label = ttk.Label(self.clock_frame, text="--:--:--", style='Clock.TLabel')
-        self.clock_label.pack(pady=(10, 20))
-        
+
         # Add a subtle border effect around the clock
-        clock_border = tk.Frame(self.clock_frame, bg='#00ff41', height=2)
+        clock_border = tk.Frame(countdown_frame, bg='#00ff41', height=2)
         clock_border.pack(fill='x', padx=50, pady=(0, 15))
         
         # Life progress display
@@ -468,22 +457,6 @@ class DeathClockGUI:
             maximum=100,
         )
         self.life_progress_bar.pack(pady=5)
-        
-        # Main countdown display - enhanced with frame and styling
-        countdown_frame = tk.Frame(time_info_frame, bg=SECONDARY_BG, relief='ridge', bd=2)
-        countdown_frame.pack(pady=20, padx=20, fill='x')
-        
-        countdown_title = ttk.Label(
-            countdown_frame,
-            text="🔥 DETAILED COUNTDOWN",
-            font=('Helvetica', 24, 'bold'),
-            background=SECONDARY_BG,
-            foreground=ACCENT_COLOR,
-        )
-        countdown_title.pack(pady=(15, 8))
-        
-        self.countdown_label = ttk.Label(countdown_frame, text="Enter your birth date to see countdown", style='Time.TLabel')
-        self.countdown_label.pack(pady=(8, 20))
 
         # Insights displayed directly under the countdown
         self.insights_label = ttk.Label(countdown_frame, text="", style='Analysis.TLabel')
@@ -675,15 +648,11 @@ class DeathClockGUI:
         
         if time_left.total_seconds() <= 0:
             self.countdown_label.config(text="⚰️ YOUR TIME HAS EXPIRED! LIVE EVERY MOMENT! ⚰️")
-            self.clock_label.config(text="00:00:00")
             self.time_stats_label.config(text="")
             self.analysis_label.config(text="")
             self.demographic_label.config(text="")
             self.milestones_label.config(text="")
             return
-        
-        # Update clock display
-        self.update_clock_display(time_left)
         
         # Update main countdown
         formatted_time = self.format_time_display(time_left)
@@ -705,35 +674,6 @@ class DeathClockGUI:
         # Update statistics and analysis
         self.update_statistics_and_analysis(time_left)
     
-    def update_clock_display(self, time_left):
-        """Update the digital clock display with backwards counting"""
-        total_seconds = int(time_left.total_seconds())
-        
-        # Calculate days, hours, minutes, seconds
-        days = total_seconds // (24 * 3600)
-        remaining = total_seconds % (24 * 3600)
-        hours = remaining // 3600
-        remaining = remaining % 3600
-        minutes = remaining // 60
-        seconds = remaining % 60
-        
-        # Format the clock display (matrix/terminal style)
-        if days > 0:
-            clock_text = f"{days:03d}D {hours:02d}:{minutes:02d}:{seconds:02d}"
-        else:
-            clock_text = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-        
-        # Add visual effects - change color based on urgency
-        if days <= 7:  # Less than a week - red alert
-            self.clock_label.config(foreground='#ff0000')
-        elif days <= 30:  # Less than a month - orange warning
-            self.clock_label.config(foreground='#ff8800')
-        elif days <= 365:  # Less than a year - yellow caution
-            self.clock_label.config(foreground='#ffff00')
-        else:  # Normal green
-            self.clock_label.config(foreground='#00ff41')
-        
-        self.clock_label.config(text=clock_text)
     
     def update_statistics_and_analysis(self, time_left):
         """Update comprehensive statistics and analysis with smooth animations"""
@@ -1008,7 +948,6 @@ class DeathClockGUI:
         self.death_date_label.config(text="")
         for lbl in [
             self.countdown_label,
-            self.clock_label,
             self.time_stats_label,
             self.analysis_label,
             self.demographic_label,
@@ -1031,7 +970,6 @@ class DeathClockGUI:
                 
                 if time_left.total_seconds() <= 0:
                     self.root.after(0, lambda: self.countdown_label.config(text="⚰️ YOUR TIME HAS EXPIRED! LIVE EVERY MOMENT! ⚰️"))
-                    self.root.after(0, lambda: self.clock_label.config(text="00:00:00"))
                     self.root.after(0, lambda: self.time_stats_label.config(text=""))
                     self.root.after(0, lambda: self.analysis_label.config(text=""))
                     self.root.after(0, lambda: self.demographic_label.config(text=""))
@@ -1040,9 +978,6 @@ class DeathClockGUI:
                     self.is_running = False
                     self.root.after(0, lambda: self.status_label.config(text="💀 Time expired"))
                     break
-                
-                # Update clock display
-                self.root.after(0, lambda tl=time_left: self.update_clock_display(tl))
                 
                 # Update main countdown
                 formatted_time = self.format_time_display(time_left)
