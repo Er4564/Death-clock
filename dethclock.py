@@ -394,11 +394,13 @@ class DeathClockGUI:
         # Create a more compact radio button layout
         radio_frame = tk.Frame(format_frame, bg=PRIMARY_BG)
         radio_frame.pack(pady=5)
-        
+
         format_options = [
             ("Detailed", "detailed"),
             ("Years & Days", "years_days"),
+            ("Weeks & Days", "weeks_days"),
             ("Days & Hours", "days_hours"),
+            ("Total Weeks", "total_weeks"),
             ("Total Days", "total_days"),
             ("Total Hours", "total_hours"),
             ("Total Minutes", "total_minutes"),
@@ -1051,7 +1053,12 @@ class DeathClockGUI:
             years = total_seconds // (365.25 * 24 * 3600)
             days = int((total_seconds % (365.25 * 24 * 3600)) // (24 * 3600))
             return f"⏳ {int(years)} years, {days} days"
-            
+
+        elif self.display_format.get() == "weeks_days":
+            weeks = total_seconds // (7 * 24 * 3600)
+            days = (total_seconds % (7 * 24 * 3600)) // (24 * 3600)
+            return f"⏳ {weeks} weeks, {days} days"
+
         elif self.display_format.get() == "days_hours":
             days = total_seconds // (24 * 3600)
             hours = (total_seconds % (24 * 3600)) // 3600
@@ -1062,6 +1069,10 @@ class DeathClockGUI:
             minutes = (total_seconds % 3600) // 60
             return f"⏳ {hours} hours, {minutes} minutes"
             
+        elif self.display_format.get() == "total_weeks":
+            weeks = total_seconds // (7 * 24 * 3600)
+            return f"⏳ {weeks} total weeks"
+
         elif self.display_format.get() == "total_days":
             days = total_seconds // (24 * 3600)
             return f"⏳ {days} total days"
@@ -1078,9 +1089,9 @@ class DeathClockGUI:
             return f"⏳ {total_seconds} total seconds"
     
     def update_display_format(self):
-        # This method is called when the display format changes
-        # If countdown is running, the display will update automatically
-        pass
+        """Refresh countdown when display format changes"""
+        if self.death_date:
+            self.update_static_countdown()
 
 def main():
     root = tk.Tk()
