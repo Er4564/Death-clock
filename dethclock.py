@@ -9,12 +9,12 @@ try:
 except ImportError:
     CALENDAR_AVAILABLE = False
 
-# Modern color scheme
-PRIMARY_BG = '#1e1e2f'
-SECONDARY_BG = '#2b2d42'
-ACCENT_COLOR = '#3a86ff'
-PROGRESS_COLOR = '#00d1b2'
-TEXT_COLOR = '#f0f0f0'
+# Modern color scheme - brighter for better readability
+PRIMARY_BG = '#121417'
+SECONDARY_BG = '#1c1f26'
+ACCENT_COLOR = '#f25a70'
+PROGRESS_COLOR = '#42b883'
+TEXT_COLOR = '#e1e1e1'
 
 class DeathClockGUI:
     def __init__(self, root):
@@ -40,8 +40,28 @@ class DeathClockGUI:
         # Style configuration
         style = ttk.Style()
         style.theme_use('clam')
+        # Bigger fonts and clearer colors
+        style.configure('Title.TLabel', font=('Helvetica', 26, 'bold'),
+                        background=PRIMARY_BG, foreground=ACCENT_COLOR)
+        style.configure('Input.TLabel', font=('Helvetica', 14),
+                        background=SECONDARY_BG, foreground=TEXT_COLOR)
+        style.configure('Clock.TLabel', font=('Courier', 28, 'bold'),
+                        background='#000000', foreground='#00ff41')
+        style.configure('Time.TLabel', font=('Helvetica', 22, 'bold'),
+                        background=SECONDARY_BG, foreground=ACCENT_COLOR)
+        style.configure('Stats.TLabel', font=('Helvetica', 14),
+                        background=SECONDARY_BG, foreground=TEXT_COLOR)
+        style.configure('Vital.TLabel', font=('Helvetica', 14),
+                        background=SECONDARY_BG, foreground=ACCENT_COLOR)
+        style.configure('Analysis.TLabel', font=('Helvetica', 14),
+                        background=SECONDARY_BG, foreground=TEXT_COLOR)
+        style.configure('Watermark.TLabel', font=('Helvetica', 12),
+                        background=PRIMARY_BG, foreground='#95a5a6')
+        style.configure('Custom.TButton', font=('Helvetica', 12, 'bold'))
+        style.map('Custom.TButton', background=[('active', '#5aa9ff')])
+        style.configure('Life.Horizontal.TProgressbar', troughcolor=SECONDARY_BG,
+                        background=PROGRESS_COLOR)
 
-        
         self.create_widgets()
         
     def get_country_list(self):
@@ -327,7 +347,7 @@ class DeathClockGUI:
         input_title = ttk.Label(
             input_frame,
             text="📝 PERSONAL INFORMATION",
-            font=('Helvetica', 12, 'bold'),
+            font=('Helvetica', 14, 'bold'),
             background=SECONDARY_BG,
             foreground=TEXT_COLOR,
         )
@@ -339,7 +359,7 @@ class DeathClockGUI:
         date_input_frame = tk.Frame(input_frame, bg=SECONDARY_BG)
         date_input_frame.grid(row=1, column=1, padx=15, pady=8, sticky='w')
         
-        self.birth_date_entry = ttk.Entry(date_input_frame, font=('Arial', 12), width=15)
+        self.birth_date_entry = ttk.Entry(date_input_frame, font=('Arial', 13), width=15)
         self.birth_date_entry.pack(side='left', padx=(0, 5))
         
         # Calendar button
@@ -351,7 +371,7 @@ class DeathClockGUI:
         format_hint = ttk.Label(
             input_frame,
             text="(DD/MM/YYYY)",
-            font=('Helvetica', 9, 'italic'),
+            font=('Helvetica', 12, 'italic'),
             background=SECONDARY_BG,
             foreground='#95a5a6',
         )
@@ -366,13 +386,13 @@ class DeathClockGUI:
         
         ttk.Label(input_frame, text="Country/Region:", style='Input.TLabel').grid(row=3, column=0, padx=15, pady=8, sticky='w')
         self.country_var = tk.StringVar(value="Global Average")
-        self.country_combo = ttk.Combobox(input_frame, textvariable=self.country_var, font=('Arial', 11), width=16, state="readonly")
+        self.country_combo = ttk.Combobox(input_frame, textvariable=self.country_var, font=('Arial', 12), width=16, state="readonly")
         self.country_combo['values'] = self.get_country_list()
         self.country_combo.grid(row=3, column=1, padx=15, pady=8)
         
         ttk.Label(input_frame, text="Custom Lifespan (optional):", style='Input.TLabel').grid(row=4, column=0, padx=15, pady=8, sticky='w')
         self.lifespan_var = tk.StringVar(value="")
-        self.lifespan_entry = ttk.Entry(input_frame, textvariable=self.lifespan_var, font=('Arial', 12), width=18)
+        self.lifespan_entry = ttk.Entry(input_frame, textvariable=self.lifespan_var, font=('Arial', 13), width=18)
         self.lifespan_entry.grid(row=4, column=1, padx=15, pady=8)
         
         # Calculate button
@@ -386,7 +406,7 @@ class DeathClockGUI:
         ttk.Label(
             format_frame,
             text="🎯 Display Format:",
-            font=('Helvetica', 11, 'bold'),
+            font=('Helvetica', 13, 'bold'),
             background=PRIMARY_BG,
             foreground=TEXT_COLOR,
         ).pack()
@@ -394,11 +414,13 @@ class DeathClockGUI:
         # Create a more compact radio button layout
         radio_frame = tk.Frame(format_frame, bg=PRIMARY_BG)
         radio_frame.pack(pady=5)
-        
+
         format_options = [
             ("Detailed", "detailed"),
             ("Years & Days", "years_days"),
+            ("Weeks & Days", "weeks_days"),
             ("Days & Hours", "days_hours"),
+            ("Total Weeks", "total_weeks"),
             ("Total Days", "total_days"),
             ("Total Hours", "total_hours"),
             ("Total Minutes", "total_minutes"),
@@ -417,20 +439,25 @@ class DeathClockGUI:
         time_info_frame = tk.Frame(self.root, bg=SECONDARY_BG, relief='sunken', bd=3)
         time_info_frame.pack(pady=15, padx=20, fill='x')
         
-        # Digital clock display (matrix-style)
-        self.clock_frame = tk.Frame(time_info_frame, bg='#000000', relief='ridge', bd=3)
-        self.clock_frame.pack(pady=20, padx=20, fill='x')
-        
-        clock_title = ttk.Label(self.clock_frame, text="⏱️ TIME REMAINING", font=('Arial', 14, 'bold'), 
-                               background='#000000', foreground='#00ff41')
-        clock_title.pack(pady=(15, 10))
-        
-        # Main clock display with enhanced styling
-        self.clock_label = ttk.Label(self.clock_frame, text="--:--:--", style='Clock.TLabel')
-        self.clock_label.pack(pady=(10, 20))
-        
+        # Countdown display uses the big clock styling
+        countdown_frame = tk.Frame(time_info_frame, bg='#000000', relief='ridge', bd=3)
+        countdown_frame.pack(pady=20, padx=20, fill='x')
+
+        countdown_title = ttk.Label(
+            countdown_frame,
+            text="⏱️ TIME REMAINING",
+            font=('Arial', 18, 'bold'),
+            background='#000000',
+            foreground='#00ff41'
+        )
+        countdown_title.pack(pady=(15, 10))
+
+        # Main countdown label styled like the digital clock
+        self.countdown_label = ttk.Label(countdown_frame, text="Enter your birth date to see countdown", style='Clock.TLabel')
+        self.countdown_label.pack(pady=(10, 20))
+
         # Add a subtle border effect around the clock
-        clock_border = tk.Frame(self.clock_frame, bg='#00ff41', height=2)
+        clock_border = tk.Frame(countdown_frame, bg='#00ff41', height=2)
         clock_border.pack(fill='x', padx=50, pady=(0, 15))
         
         # Life progress display
@@ -447,21 +474,9 @@ class DeathClockGUI:
         )
         self.life_progress_bar.pack(pady=5)
         
-        # Main countdown display - enhanced with frame and styling
-        countdown_frame = tk.Frame(time_info_frame, bg=SECONDARY_BG, relief='ridge', bd=2)
-        countdown_frame.pack(pady=20, padx=20, fill='x')
-        
-        countdown_title = ttk.Label(
-            countdown_frame,
-            text="🔥 DETAILED COUNTDOWN",
-            font=('Helvetica', 18, 'bold'),
-            background=SECONDARY_BG,
-            foreground=ACCENT_COLOR,
-        )
-        countdown_title.pack(pady=(15, 8))
-        
-        self.countdown_label = ttk.Label(countdown_frame, text="Enter your birth date to see countdown", style='Time.TLabel')
-        self.countdown_label.pack(pady=(8, 20))
+        # Insights displayed directly under the countdown
+        self.insights_label = ttk.Label(countdown_frame, text="", style='Analysis.TLabel')
+        self.insights_label.pack(pady=(0, 15))
         
         # Statistics and Analysis Section - Enhanced with larger size
         stats_frame = tk.Frame(time_info_frame, bg=SECONDARY_BG, relief='raised', bd=4)
@@ -470,7 +485,7 @@ class DeathClockGUI:
         stats_title = ttk.Label(
             stats_frame,
             text="📊 COMPREHENSIVE STATISTICAL ANALYSIS",
-            font=('Helvetica', 16, 'bold'),
+            font=('Helvetica', 20, 'bold'),
             background=SECONDARY_BG,
             foreground='#f39c12',
         )
@@ -649,15 +664,11 @@ class DeathClockGUI:
         
         if time_left.total_seconds() <= 0:
             self.countdown_label.config(text="⚰️ YOUR TIME HAS EXPIRED! LIVE EVERY MOMENT! ⚰️")
-            self.clock_label.config(text="00:00:00")
             self.time_stats_label.config(text="")
             self.analysis_label.config(text="")
             self.demographic_label.config(text="")
             self.milestones_label.config(text="")
             return
-        
-        # Update clock display
-        self.update_clock_display(time_left)
         
         # Update main countdown
         formatted_time = self.format_time_display(time_left)
@@ -679,35 +690,6 @@ class DeathClockGUI:
         # Update statistics and analysis
         self.update_statistics_and_analysis(time_left)
     
-    def update_clock_display(self, time_left):
-        """Update the digital clock display with backwards counting"""
-        total_seconds = int(time_left.total_seconds())
-        
-        # Calculate days, hours, minutes, seconds
-        days = total_seconds // (24 * 3600)
-        remaining = total_seconds % (24 * 3600)
-        hours = remaining // 3600
-        remaining = remaining % 3600
-        minutes = remaining // 60
-        seconds = remaining % 60
-        
-        # Format the clock display (matrix/terminal style)
-        if days > 0:
-            clock_text = f"{days:03d}D {hours:02d}:{minutes:02d}:{seconds:02d}"
-        else:
-            clock_text = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-        
-        # Add visual effects - change color based on urgency
-        if days <= 7:  # Less than a week - red alert
-            self.clock_label.config(foreground='#ff0000')
-        elif days <= 30:  # Less than a month - orange warning
-            self.clock_label.config(foreground='#ff8800')
-        elif days <= 365:  # Less than a year - yellow caution
-            self.clock_label.config(foreground='#ffff00')
-        else:  # Normal green
-            self.clock_label.config(foreground='#00ff41')
-        
-        self.clock_label.config(text=clock_text)
     
     def update_statistics_and_analysis(self, time_left):
         """Update comprehensive statistics and analysis with smooth animations"""
@@ -785,6 +767,8 @@ class DeathClockGUI:
             
             work_hours_remaining = total_days * 8
             vacation_days_remaining = int(total_years * 20)
+            tv_episodes_remaining = total_hours  # Assuming 1h episodes
+            workout_sessions = total_days // 2  # Workout every other day
 
             analysis_text = (
                 f"😴 ~{sleep_hours_remaining:,} hours of sleep | "
@@ -792,7 +776,9 @@ class DeathClockGUI:
                 f"🍽️ ~{meals_remaining:,} meals | "
                 f"🎉 ~{weekends_remaining:,} weekend days | "
                 f"💼 ~{work_hours_remaining:,} work hours | "
-                f"✈️ ~{vacation_days_remaining:,} vacation days"
+                f"✈️ ~{vacation_days_remaining:,} vacation days | "
+                f"📺 ~{tv_episodes_remaining:,} TV episodes | "
+                f"🏋️ ~{workout_sessions:,} workouts"
             )
             self.analysis_label.config(text=analysis_text)
             
@@ -887,19 +873,27 @@ class DeathClockGUI:
             words_to_speak = total_days * 16000  # Average 16,000 words per day
             dreams_remaining = total_days * 4  # Average 4 dreams per night
             years_in_space = total_years  # If you were on the International Space Station
-            
+            distance_walked_km = steps_remaining * 0.0008
+
             # Scale the display based on magnitude
             if total_years > 20:
                 fun_facts = (f"👁️ ~{blinks_remaining/1000000:.1f}M blinks ahead | "
                             f"🗣️ ~{words_to_speak/1000000:.1f}M words to speak | "
                             f"💭 ~{dreams_remaining:,} dreams to have | "
-                            f"🚀 Equal to {years_in_space:.1f} years orbiting Earth!")
+                            f"🚀 {years_in_space:.1f} years in orbit | "
+                            f"🎧 ~{songs_to_hear:,} songs | "
+                            f"🚶 ~{distance_walked_km:,.0f} km to walk")
             else:
                 fun_facts = (f"👁️ ~{blinks_remaining:,.0f} blinks ahead | "
                             f"🗣️ ~{words_to_speak:,} words to speak | "
                             f"💭 ~{dreams_remaining:,} dreams to have | "
-                            f"🚀 Equal to {years_in_space:.1f} years orbiting Earth!")
+                            f"🚀 {years_in_space:.1f} years in orbit | "
+                            f"🎧 ~{songs_to_hear:,} songs | "
+                            f"🚶 ~{distance_walked_km:,.0f} km to walk")
             self.fun_facts_label.config(text=fun_facts)
+
+            # Show combined insights under the countdown
+            self.insights_label.config(text=f"{analysis_text} | {fun_facts}")
         
     def start_countdown_automatically(self):
         """Start countdown automatically after calculation"""
@@ -954,6 +948,7 @@ class DeathClockGUI:
             self.life_quality_label.cget("text"),
             self.perspective_label.cget("text"),
             self.fun_facts_label.cget("text"),
+            self.insights_label.cget("text"),
         ])
         self.root.clipboard_clear()
         self.root.clipboard_append(stats)
@@ -969,7 +964,6 @@ class DeathClockGUI:
         self.death_date_label.config(text="")
         for lbl in [
             self.countdown_label,
-            self.clock_label,
             self.time_stats_label,
             self.analysis_label,
             self.demographic_label,
@@ -977,6 +971,7 @@ class DeathClockGUI:
             self.life_quality_label,
             self.perspective_label,
             self.fun_facts_label,
+            self.insights_label,
         ]:
             lbl.config(text="")
         self.status_label.config(text="Ready - Enter your details above")
@@ -991,17 +986,14 @@ class DeathClockGUI:
                 
                 if time_left.total_seconds() <= 0:
                     self.root.after(0, lambda: self.countdown_label.config(text="⚰️ YOUR TIME HAS EXPIRED! LIVE EVERY MOMENT! ⚰️"))
-                    self.root.after(0, lambda: self.clock_label.config(text="00:00:00"))
                     self.root.after(0, lambda: self.time_stats_label.config(text=""))
                     self.root.after(0, lambda: self.analysis_label.config(text=""))
                     self.root.after(0, lambda: self.demographic_label.config(text=""))
                     self.root.after(0, lambda: self.milestones_label.config(text=""))
+                    self.root.after(0, lambda: self.insights_label.config(text=""))
                     self.is_running = False
                     self.root.after(0, lambda: self.status_label.config(text="💀 Time expired"))
                     break
-                
-                # Update clock display
-                self.root.after(0, lambda tl=time_left: self.update_clock_display(tl))
                 
                 # Update main countdown
                 formatted_time = self.format_time_display(time_left)
@@ -1051,7 +1043,12 @@ class DeathClockGUI:
             years = total_seconds // (365.25 * 24 * 3600)
             days = int((total_seconds % (365.25 * 24 * 3600)) // (24 * 3600))
             return f"⏳ {int(years)} years, {days} days"
-            
+
+        elif self.display_format.get() == "weeks_days":
+            weeks = total_seconds // (7 * 24 * 3600)
+            days = (total_seconds % (7 * 24 * 3600)) // (24 * 3600)
+            return f"⏳ {weeks} weeks, {days} days"
+
         elif self.display_format.get() == "days_hours":
             days = total_seconds // (24 * 3600)
             hours = (total_seconds % (24 * 3600)) // 3600
@@ -1062,6 +1059,10 @@ class DeathClockGUI:
             minutes = (total_seconds % 3600) // 60
             return f"⏳ {hours} hours, {minutes} minutes"
             
+        elif self.display_format.get() == "total_weeks":
+            weeks = total_seconds // (7 * 24 * 3600)
+            return f"⏳ {weeks} total weeks"
+
         elif self.display_format.get() == "total_days":
             days = total_seconds // (24 * 3600)
             return f"⏳ {days} total days"
@@ -1078,9 +1079,9 @@ class DeathClockGUI:
             return f"⏳ {total_seconds} total seconds"
     
     def update_display_format(self):
-        # This method is called when the display format changes
-        # If countdown is running, the display will update automatically
-        pass
+        """Refresh countdown when display format changes"""
+        if self.death_date:
+            self.update_static_countdown()
 
 def main():
     root = tk.Tk()
