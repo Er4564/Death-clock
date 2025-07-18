@@ -9,5 +9,4 @@ An interactive death clock built with Tkinter. Enter your birth date and demogra
 - Multiple display formats including weeks and total weeks
 - Readable dark theme with larger fonts
 - Expanded analysis with extra metrics and fun facts
-- Command-line version in C++ for faster execution
 

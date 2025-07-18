@@ -439,22 +439,7 @@ class DeathClockGUI:
         time_info_frame = tk.Frame(self.root, bg=SECONDARY_BG, relief='sunken', bd=3)
         time_info_frame.pack(pady=15, padx=20, fill='x')
         
-        # Countdown display uses the big clock styling
-        countdown_frame = tk.Frame(time_info_frame, bg='#000000', relief='ridge', bd=3)
-        countdown_frame.pack(pady=20, padx=20, fill='x')
 
-        countdown_title = ttk.Label(
-            countdown_frame,
-            text="⏱️ TIME REMAINING",
-            font=('Arial', 18, 'bold'),
-            background='#000000',
-            foreground='#00ff41'
-        )
-        countdown_title.pack(pady=(15, 10))
-
-        # Main countdown label styled like the digital clock
-        self.countdown_label = ttk.Label(countdown_frame, text="Enter your birth date to see countdown", style='Clock.TLabel')
-        self.countdown_label.pack(pady=(10, 20))
 
         # Add a subtle border effect around the clock
         clock_border = tk.Frame(countdown_frame, bg='#00ff41', height=2)
@@ -473,7 +458,7 @@ class DeathClockGUI:
             maximum=100,
         )
         self.life_progress_bar.pack(pady=5)
-        
+
         # Insights displayed directly under the countdown
         self.insights_label = ttk.Label(countdown_frame, text="", style='Analysis.TLabel')
         self.insights_label.pack(pady=(0, 15))
