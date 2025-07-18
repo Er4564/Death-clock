@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime, timedelta
 import threading
+import requests
 try:
     from tkcalendar import Calendar
     CALENDAR_AVAILABLE = True
@@ -23,6 +24,9 @@ class DeathClockGUI:
         self.is_running = False
         self.update_thread = None
         self.display_format = tk.StringVar(value="detailed")
+        self.use_api_var = tk.BooleanVar(value=False)
+        self.name_var = tk.StringVar(value="")
+        self.api_age = None
         
         # Animation variables for smooth transitions
         self.last_heartbeats = 0
@@ -252,6 +256,19 @@ class DeathClockGUI:
         
         data = life_expectancy_data.get(country, life_expectancy_data["Global Average"])
         return data[0] if gender == "Male" else data[1]
+
+    def fetch_api_age(self, name):
+        """Fetch predicted age using agify.io API"""
+        try:
+            resp = requests.get("https://api.agify.io", params={"name": name}, timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                age = data.get("age")
+                if age:
+                    return age
+        except Exception:
+            pass
+        return None
     
     def open_calendar(self):
         """Open calendar widget for date selection"""
@@ -320,15 +337,19 @@ class DeathClockGUI:
         input_frame = tk.Frame(self.root, bg='#34495e', relief='groove', bd=2)
         input_frame.pack(pady=20, padx=30, fill='x')
         
-        input_title = ttk.Label(input_frame, text="📝 PERSONAL INFORMATION", font=('Arial', 12, 'bold'), 
+        input_title = ttk.Label(input_frame, text="📝 PERSONAL INFORMATION", font=('Arial', 12, 'bold'),
                                background='#34495e', foreground='#ecf0f1')
-        input_title.grid(row=0, column=0, columnspan=2, pady=10)
-        
-        ttk.Label(input_frame, text="Date of Birth:", style='Input.TLabel').grid(row=1, column=0, padx=15, pady=8, sticky='w')
+        input_title.grid(row=0, column=0, columnspan=3, pady=10)
+
+        ttk.Label(input_frame, text="First Name:", style='Input.TLabel').grid(row=1, column=0, padx=15, pady=8, sticky='w')
+        self.name_entry = ttk.Entry(input_frame, textvariable=self.name_var, font=('Arial', 12), width=18)
+        self.name_entry.grid(row=1, column=1, padx=15, pady=8, sticky='w')
+
+        ttk.Label(input_frame, text="Date of Birth:", style='Input.TLabel').grid(row=2, column=0, padx=15, pady=8, sticky='w')
         
         # Date input with calendar option
         date_input_frame = tk.Frame(input_frame, bg='#34495e')
-        date_input_frame.grid(row=1, column=1, padx=15, pady=8, sticky='w')
+        date_input_frame.grid(row=2, column=1, padx=15, pady=8, sticky='w')
         
         self.birth_date_entry = ttk.Entry(date_input_frame, font=('Arial', 12), width=15)
         self.birth_date_entry.pack(side='left', padx=(0, 5))
@@ -339,31 +360,34 @@ class DeathClockGUI:
             calendar_btn.pack(side='left')
             
         # Format hint
-        format_hint = ttk.Label(input_frame, text="(DD/MM/YYYY)", font=('Arial', 9, 'italic'), 
+        format_hint = ttk.Label(input_frame, text="(DD/MM/YYYY)", font=('Arial', 9, 'italic'),
                                background='#34495e', foreground='#95a5a6')
-        format_hint.grid(row=1, column=2, padx=5, pady=8, sticky='w')
+        format_hint.grid(row=2, column=2, padx=5, pady=8, sticky='w')
         
-        ttk.Label(input_frame, text="Gender:", style='Input.TLabel').grid(row=2, column=0, padx=15, pady=8, sticky='w')
+        ttk.Label(input_frame, text="Gender:", style='Input.TLabel').grid(row=3, column=0, padx=15, pady=8, sticky='w')
         self.gender_var = tk.StringVar(value="Male")
         gender_frame = tk.Frame(input_frame, bg='#34495e')
-        gender_frame.grid(row=2, column=1, padx=15, pady=8, sticky='w')
+        gender_frame.grid(row=3, column=1, padx=15, pady=8, sticky='w')
         ttk.Radiobutton(gender_frame, text="Male", variable=self.gender_var, value="Male").pack(side='left', padx=5)
         ttk.Radiobutton(gender_frame, text="Female", variable=self.gender_var, value="Female").pack(side='left', padx=5)
         
-        ttk.Label(input_frame, text="Country/Region:", style='Input.TLabel').grid(row=3, column=0, padx=15, pady=8, sticky='w')
+        ttk.Label(input_frame, text="Country/Region:", style='Input.TLabel').grid(row=4, column=0, padx=15, pady=8, sticky='w')
         self.country_var = tk.StringVar(value="Global Average")
         self.country_combo = ttk.Combobox(input_frame, textvariable=self.country_var, font=('Arial', 11), width=16, state="readonly")
         self.country_combo['values'] = self.get_country_list()
-        self.country_combo.grid(row=3, column=1, padx=15, pady=8)
+        self.country_combo.grid(row=4, column=1, padx=15, pady=8)
         
-        ttk.Label(input_frame, text="Custom Lifespan (optional):", style='Input.TLabel').grid(row=4, column=0, padx=15, pady=8, sticky='w')
+        ttk.Label(input_frame, text="Custom Lifespan (optional):", style='Input.TLabel').grid(row=5, column=0, padx=15, pady=8, sticky='w')
         self.lifespan_var = tk.StringVar(value="")
         self.lifespan_entry = ttk.Entry(input_frame, textvariable=self.lifespan_var, font=('Arial', 12), width=18)
-        self.lifespan_entry.grid(row=4, column=1, padx=15, pady=8)
+        self.lifespan_entry.grid(row=5, column=1, padx=15, pady=8)
         
         # Calculate button
+        self.api_check = ttk.Checkbutton(input_frame, text="Use Age Prediction API", variable=self.use_api_var)
+        self.api_check.grid(row=6, column=0, columnspan=2, padx=15, pady=8, sticky='w')
+
         calculate_btn = ttk.Button(input_frame, text="⚡ CALCULATE & START", command=self.calculate_death_date, style='Custom.TButton')
-        calculate_btn.grid(row=5, column=0, columnspan=2, pady=15)
+        calculate_btn.grid(row=7, column=0, columnspan=2, pady=15)
         
         # Display format selection - more compact
         format_frame = tk.Frame(self.root, bg='#2c3e50')
@@ -498,6 +522,11 @@ class DeathClockGUI:
         
         self.fun_facts_label = ttk.Label(stats_row8, text="", style='Analysis.TLabel')
         self.fun_facts_label.pack(pady=(8, 25))
+
+        stats_row9 = tk.Frame(stats_frame, bg='#34495e')
+        stats_row9.pack(pady=12, fill='x', padx=20)
+        self.api_info_label = ttk.Label(stats_row9, text="", style='Analysis.TLabel')
+        self.api_info_label.pack(pady=8)
         
         # Control buttons - simplified
         button_frame = tk.Frame(self.root, bg='#2c3e50')
@@ -534,6 +563,12 @@ class DeathClockGUI:
             custom_lifespan_str = self.lifespan_var.get().strip()
             gender = self.gender_var.get()
             country = self.country_var.get()
+            name = self.name_var.get().strip()
+            api_age = None
+            if self.use_api_var.get() and name:
+                api_age = self.fetch_api_age(name)
+                if api_age:
+                    self.api_age = api_age
             
             if not birth_date_str:
                 messagebox.showerror("Error", "Please enter your date of birth")
@@ -563,6 +598,10 @@ class DeathClockGUI:
             
             self.death_date_label.config(text=f"⚰️ Estimated death date: {self.death_date.strftime('%d/%m/%Y %H:%M:%S')}")
             self.status_label.config(text=f"✅ {demo_info}")
+            if api_age:
+                self.api_info_label.config(text=f"🔮 API predicted lifespan: {api_age} years")
+            else:
+                self.api_info_label.config(text="")
 
             # Update life progress info
             self.update_life_progress()
@@ -614,6 +653,7 @@ class DeathClockGUI:
             self.analysis_label.config(text="")
             self.demographic_label.config(text="")
             self.milestones_label.config(text="")
+            self.api_info_label.config(text="")
             return
         
         # Update clock display
@@ -872,6 +912,7 @@ class DeathClockGUI:
         if self.death_date:
             self.stop_countdown()
             self.start_countdown_automatically()
+            self.api_info_label.config(text="")
         else:
             messagebox.showwarning("Warning", "Please calculate death date first")
     
@@ -892,6 +933,7 @@ class DeathClockGUI:
     def stop_countdown(self):
         self.is_running = False
         self.status_label.config(text="⏸️ Countdown paused")
+        self.api_info_label.config(text="")
     
     def update_countdown(self):
         while self.is_running:
@@ -906,6 +948,7 @@ class DeathClockGUI:
                     self.root.after(0, lambda: self.analysis_label.config(text=""))
                     self.root.after(0, lambda: self.demographic_label.config(text=""))
                     self.root.after(0, lambda: self.milestones_label.config(text=""))
+                    self.root.after(0, lambda: self.api_info_label.config(text=""))
                     self.is_running = False
                     self.root.after(0, lambda: self.status_label.config(text="💀 Time expired"))
                     break
