@@ -40,17 +40,7 @@ class DeathClockGUI:
         # Style configuration
         style = ttk.Style()
         style.theme_use('clam')
-        style.configure('Title.TLabel', font=('Helvetica', 22, 'bold'), background=PRIMARY_BG, foreground=ACCENT_COLOR)
-        style.configure('Input.TLabel', font=('Helvetica', 12), background=PRIMARY_BG, foreground=TEXT_COLOR)
-        style.configure('Time.TLabel', font=('Helvetica', 48, 'bold'), background=SECONDARY_BG, foreground=ACCENT_COLOR)
-        style.configure('Clock.TLabel', font=('Courier New', 52, 'bold'), background='#000000', foreground=ACCENT_COLOR)
-        style.configure('Stats.TLabel', font=('Helvetica', 15, 'bold'), background=SECONDARY_BG, foreground='#f39c12')
-        style.configure('Analysis.TLabel', font=('Helvetica', 14), background=SECONDARY_BG, foreground='#e67e22')
-        style.configure('Vital.TLabel', font=('Helvetica', 17, 'bold'), background=SECONDARY_BG, foreground='#e74c3c')
-        style.configure('Custom.TButton', font=('Helvetica', 12, 'bold'), padding=12)
-        style.configure('Watermark.TLabel', font=('Helvetica', 8, 'italic'), background=PRIMARY_BG, foreground='#7f8c8d')
-        style.configure('Life.Horizontal.TProgressbar', troughcolor=PRIMARY_BG,
-                        background=PROGRESS_COLOR, thickness=20)
+
         
         self.create_widgets()
         
