@@ -9,12 +9,12 @@ try:
 except ImportError:
     CALENDAR_AVAILABLE = False
 
-# Modern color scheme
-PRIMARY_BG = '#1e1e2f'
-SECONDARY_BG = '#2b2d42'
-ACCENT_COLOR = '#3a86ff'
-PROGRESS_COLOR = '#00d1b2'
-TEXT_COLOR = '#f0f0f0'
+# Modern color scheme - brighter for better readability
+PRIMARY_BG = '#121417'
+SECONDARY_BG = '#1c1f26'
+ACCENT_COLOR = '#f25a70'
+PROGRESS_COLOR = '#42b883'
+TEXT_COLOR = '#e1e1e1'
 
 class DeathClockGUI:
     def __init__(self, root):
@@ -40,8 +40,28 @@ class DeathClockGUI:
         # Style configuration
         style = ttk.Style()
         style.theme_use('clam')
+        # Bigger fonts and clearer colors
+        style.configure('Title.TLabel', font=('Helvetica', 26, 'bold'),
+                        background=PRIMARY_BG, foreground=ACCENT_COLOR)
+        style.configure('Input.TLabel', font=('Helvetica', 14),
+                        background=SECONDARY_BG, foreground=TEXT_COLOR)
+        style.configure('Clock.TLabel', font=('Courier', 28, 'bold'),
+                        background='#000000', foreground='#00ff41')
+        style.configure('Time.TLabel', font=('Helvetica', 22, 'bold'),
+                        background=SECONDARY_BG, foreground=ACCENT_COLOR)
+        style.configure('Stats.TLabel', font=('Helvetica', 14),
+                        background=SECONDARY_BG, foreground=TEXT_COLOR)
+        style.configure('Vital.TLabel', font=('Helvetica', 14),
+                        background=SECONDARY_BG, foreground=ACCENT_COLOR)
+        style.configure('Analysis.TLabel', font=('Helvetica', 14),
+                        background=SECONDARY_BG, foreground=TEXT_COLOR)
+        style.configure('Watermark.TLabel', font=('Helvetica', 12),
+                        background=PRIMARY_BG, foreground='#95a5a6')
+        style.configure('Custom.TButton', font=('Helvetica', 12, 'bold'))
+        style.map('Custom.TButton', background=[('active', '#5aa9ff')])
+        style.configure('Life.Horizontal.TProgressbar', troughcolor=SECONDARY_BG,
+                        background=PROGRESS_COLOR)
 
-        
         self.create_widgets()
         
     def get_country_list(self):
@@ -327,7 +347,7 @@ class DeathClockGUI:
         input_title = ttk.Label(
             input_frame,
             text="📝 PERSONAL INFORMATION",
-            font=('Helvetica', 12, 'bold'),
+            font=('Helvetica', 14, 'bold'),
             background=SECONDARY_BG,
             foreground=TEXT_COLOR,
         )
@@ -339,7 +359,7 @@ class DeathClockGUI:
         date_input_frame = tk.Frame(input_frame, bg=SECONDARY_BG)
         date_input_frame.grid(row=1, column=1, padx=15, pady=8, sticky='w')
         
-        self.birth_date_entry = ttk.Entry(date_input_frame, font=('Arial', 12), width=15)
+        self.birth_date_entry = ttk.Entry(date_input_frame, font=('Arial', 13), width=15)
         self.birth_date_entry.pack(side='left', padx=(0, 5))
         
         # Calendar button
@@ -351,7 +371,7 @@ class DeathClockGUI:
         format_hint = ttk.Label(
             input_frame,
             text="(DD/MM/YYYY)",
-            font=('Helvetica', 9, 'italic'),
+            font=('Helvetica', 12, 'italic'),
             background=SECONDARY_BG,
             foreground='#95a5a6',
         )
@@ -366,13 +386,13 @@ class DeathClockGUI:
         
         ttk.Label(input_frame, text="Country/Region:", style='Input.TLabel').grid(row=3, column=0, padx=15, pady=8, sticky='w')
         self.country_var = tk.StringVar(value="Global Average")
-        self.country_combo = ttk.Combobox(input_frame, textvariable=self.country_var, font=('Arial', 11), width=16, state="readonly")
+        self.country_combo = ttk.Combobox(input_frame, textvariable=self.country_var, font=('Arial', 12), width=16, state="readonly")
         self.country_combo['values'] = self.get_country_list()
         self.country_combo.grid(row=3, column=1, padx=15, pady=8)
         
         ttk.Label(input_frame, text="Custom Lifespan (optional):", style='Input.TLabel').grid(row=4, column=0, padx=15, pady=8, sticky='w')
         self.lifespan_var = tk.StringVar(value="")
-        self.lifespan_entry = ttk.Entry(input_frame, textvariable=self.lifespan_var, font=('Arial', 12), width=18)
+        self.lifespan_entry = ttk.Entry(input_frame, textvariable=self.lifespan_var, font=('Arial', 13), width=18)
         self.lifespan_entry.grid(row=4, column=1, padx=15, pady=8)
         
         # Calculate button
@@ -386,7 +406,7 @@ class DeathClockGUI:
         ttk.Label(
             format_frame,
             text="🎯 Display Format:",
-            font=('Helvetica', 11, 'bold'),
+            font=('Helvetica', 13, 'bold'),
             background=PRIMARY_BG,
             foreground=TEXT_COLOR,
         ).pack()
@@ -423,7 +443,7 @@ class DeathClockGUI:
         self.clock_frame = tk.Frame(time_info_frame, bg='#000000', relief='ridge', bd=3)
         self.clock_frame.pack(pady=20, padx=20, fill='x')
         
-        clock_title = ttk.Label(self.clock_frame, text="⏱️ TIME REMAINING", font=('Arial', 14, 'bold'), 
+        clock_title = ttk.Label(self.clock_frame, text="⏱️ TIME REMAINING", font=('Arial', 18, 'bold'),
                                background='#000000', foreground='#00ff41')
         clock_title.pack(pady=(15, 10))
         
@@ -456,7 +476,7 @@ class DeathClockGUI:
         countdown_title = ttk.Label(
             countdown_frame,
             text="🔥 DETAILED COUNTDOWN",
-            font=('Helvetica', 18, 'bold'),
+            font=('Helvetica', 24, 'bold'),
             background=SECONDARY_BG,
             foreground=ACCENT_COLOR,
         )
@@ -472,7 +492,7 @@ class DeathClockGUI:
         stats_title = ttk.Label(
             stats_frame,
             text="📊 COMPREHENSIVE STATISTICAL ANALYSIS",
-            font=('Helvetica', 16, 'bold'),
+            font=('Helvetica', 20, 'bold'),
             background=SECONDARY_BG,
             foreground='#f39c12',
         )
@@ -787,6 +807,8 @@ class DeathClockGUI:
             
             work_hours_remaining = total_days * 8
             vacation_days_remaining = int(total_years * 20)
+            tv_episodes_remaining = total_hours  # Assuming 1h episodes
+            workout_sessions = total_days // 2  # Workout every other day
 
             analysis_text = (
                 f"😴 ~{sleep_hours_remaining:,} hours of sleep | "
@@ -794,7 +816,9 @@ class DeathClockGUI:
                 f"🍽️ ~{meals_remaining:,} meals | "
                 f"🎉 ~{weekends_remaining:,} weekend days | "
                 f"💼 ~{work_hours_remaining:,} work hours | "
-                f"✈️ ~{vacation_days_remaining:,} vacation days"
+                f"✈️ ~{vacation_days_remaining:,} vacation days | "
+                f"📺 ~{tv_episodes_remaining:,} TV episodes | "
+                f"🏋️ ~{workout_sessions:,} workouts"
             )
             self.analysis_label.config(text=analysis_text)
             
@@ -889,18 +913,23 @@ class DeathClockGUI:
             words_to_speak = total_days * 16000  # Average 16,000 words per day
             dreams_remaining = total_days * 4  # Average 4 dreams per night
             years_in_space = total_years  # If you were on the International Space Station
-            
+            distance_walked_km = steps_remaining * 0.0008
+
             # Scale the display based on magnitude
             if total_years > 20:
                 fun_facts = (f"👁️ ~{blinks_remaining/1000000:.1f}M blinks ahead | "
                             f"🗣️ ~{words_to_speak/1000000:.1f}M words to speak | "
                             f"💭 ~{dreams_remaining:,} dreams to have | "
-                            f"🚀 Equal to {years_in_space:.1f} years orbiting Earth!")
+                            f"🚀 {years_in_space:.1f} years in orbit | "
+                            f"🎧 ~{songs_to_hear:,} songs | "
+                            f"🚶 ~{distance_walked_km:,.0f} km to walk")
             else:
                 fun_facts = (f"👁️ ~{blinks_remaining:,.0f} blinks ahead | "
                             f"🗣️ ~{words_to_speak:,} words to speak | "
                             f"💭 ~{dreams_remaining:,} dreams to have | "
-                            f"🚀 Equal to {years_in_space:.1f} years orbiting Earth!")
+                            f"🚀 {years_in_space:.1f} years in orbit | "
+                            f"🎧 ~{songs_to_hear:,} songs | "
+                            f"🚶 ~{distance_walked_km:,.0f} km to walk")
             self.fun_facts_label.config(text=fun_facts)
         
     def start_countdown_automatically(self):
