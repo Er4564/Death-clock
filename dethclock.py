@@ -484,6 +484,10 @@ class DeathClockGUI:
         
         self.countdown_label = ttk.Label(countdown_frame, text="Enter your birth date to see countdown", style='Time.TLabel')
         self.countdown_label.pack(pady=(8, 20))
+
+        # Insights displayed directly under the countdown
+        self.insights_label = ttk.Label(countdown_frame, text="", style='Analysis.TLabel')
+        self.insights_label.pack(pady=(0, 15))
         
         # Statistics and Analysis Section - Enhanced with larger size
         stats_frame = tk.Frame(time_info_frame, bg=SECONDARY_BG, relief='raised', bd=4)
@@ -931,6 +935,9 @@ class DeathClockGUI:
                             f"🎧 ~{songs_to_hear:,} songs | "
                             f"🚶 ~{distance_walked_km:,.0f} km to walk")
             self.fun_facts_label.config(text=fun_facts)
+
+            # Show combined insights under the countdown
+            self.insights_label.config(text=f"{analysis_text} | {fun_facts}")
         
     def start_countdown_automatically(self):
         """Start countdown automatically after calculation"""
@@ -985,6 +992,7 @@ class DeathClockGUI:
             self.life_quality_label.cget("text"),
             self.perspective_label.cget("text"),
             self.fun_facts_label.cget("text"),
+            self.insights_label.cget("text"),
         ])
         self.root.clipboard_clear()
         self.root.clipboard_append(stats)
@@ -1008,6 +1016,7 @@ class DeathClockGUI:
             self.life_quality_label,
             self.perspective_label,
             self.fun_facts_label,
+            self.insights_label,
         ]:
             lbl.config(text="")
         self.status_label.config(text="Ready - Enter your details above")
@@ -1027,6 +1036,7 @@ class DeathClockGUI:
                     self.root.after(0, lambda: self.analysis_label.config(text=""))
                     self.root.after(0, lambda: self.demographic_label.config(text=""))
                     self.root.after(0, lambda: self.milestones_label.config(text=""))
+                    self.root.after(0, lambda: self.insights_label.config(text=""))
                     self.is_running = False
                     self.root.after(0, lambda: self.status_label.config(text="💀 Time expired"))
                     break
