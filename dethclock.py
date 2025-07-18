@@ -42,6 +42,8 @@ class DeathClockGUI:
         style.configure('Vital.TLabel', font=('Arial', 16, 'bold'), background='#34495e', foreground='#e74c3c')  # Bigger vital
         style.configure('Custom.TButton', font=('Arial', 12, 'bold'), padding=12)
         style.configure('Watermark.TLabel', font=('Arial', 8, 'italic'), background='#2c3e50', foreground='#7f8c8d')
+        style.configure('Life.Horizontal.TProgressbar', troughcolor='#2c3e50',
+                        background='#3498db', thickness=20)
         
         self.create_widgets()
         
@@ -298,6 +300,18 @@ class DeathClockGUI:
         cancel_btn.pack(side='left', padx=5)
         
     def create_widgets(self):
+        # Menu bar for basic actions
+        menu_bar = tk.Menu(self.root)
+        self.root.config(menu=menu_bar)
+
+        file_menu = tk.Menu(menu_bar, tearoff=0)
+        file_menu.add_command(label="Exit", command=self.root.quit)
+        menu_bar.add_cascade(label="File", menu=file_menu)
+
+        help_menu = tk.Menu(menu_bar, tearoff=0)
+        help_menu.add_command(label="About", command=self.show_about)
+        menu_bar.add_cascade(label="Help", menu=help_menu)
+
         # Title
         title_label = ttk.Label(self.root, text="💀 DEATH CLOCK CALCULATOR 💀", style='Title.TLabel')
         title_label.pack(pady=25)
@@ -406,6 +420,13 @@ class DeathClockGUI:
         
         self.life_progress_label = ttk.Label(progress_frame, text="", style='Input.TLabel')
         self.life_progress_label.pack()
+        self.life_progress_bar = ttk.Progressbar(
+            progress_frame,
+            style='Life.Horizontal.TProgressbar',
+            length=400,
+            maximum=100,
+        )
+        self.life_progress_bar.pack(pady=5)
         
         # Main countdown display - enhanced with frame and styling
         countdown_frame = tk.Frame(time_info_frame, bg='#34495e', relief='ridge', bd=2)
@@ -500,6 +521,13 @@ class DeathClockGUI:
         watermark_label = ttk.Label(watermark_frame, text="Created by Eran", style='Watermark.TLabel')
         watermark_label.pack(side='bottom', padx=20, pady=5)
 
+    def show_about(self):
+        """Display application information"""
+        messagebox.showinfo(
+            "About",
+            "Death Clock\nEstimate your remaining time.\nCreated by Eran",
+        )
+
     def calculate_death_date(self):
         try:
             birth_date_str = self.birth_date_entry.get().strip()
@@ -566,13 +594,9 @@ class DeathClockGUI:
         progress_percentage = (lived_seconds / total_life_seconds) * 100
         age_years = lived_seconds / (365.25 * 24 * 3600)
         
-        # Create a visual progress bar using characters
-        bar_length = 30
-        filled_length = int(bar_length * progress_percentage / 100)
-        bar = "█" * filled_length + "░" * (bar_length - filled_length)
-        
+        self.life_progress_bar['value'] = progress_percentage
         self.life_progress_label.config(
-            text=f"Life Progress: {bar} {progress_percentage:.1f}% | Age: {age_years:.1f} years"
+            text=f"Life Progress: {progress_percentage:.1f}% | Age: {age_years:.1f} years"
         )
     
     def update_static_countdown(self):
