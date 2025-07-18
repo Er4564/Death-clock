@@ -439,7 +439,13 @@ class DeathClockGUI:
         time_info_frame = tk.Frame(self.root, bg=SECONDARY_BG, relief='sunken', bd=3)
         time_info_frame.pack(pady=15, padx=20, fill='x')
         
-
+        # Countdown display frame
+        countdown_frame = tk.Frame(time_info_frame, bg=SECONDARY_BG)
+        countdown_frame.pack(pady=15)
+        
+        # Main countdown label
+        self.countdown_label = ttk.Label(countdown_frame, text="", style='Clock.TLabel')
+        self.countdown_label.pack(pady=10)
 
         # Add a subtle border effect around the clock
         clock_border = tk.Frame(countdown_frame, bg='#00ff41', height=2)
