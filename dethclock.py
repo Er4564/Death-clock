@@ -9,12 +9,19 @@ try:
 except ImportError:
     CALENDAR_AVAILABLE = False
 
+# Modern color scheme
+PRIMARY_BG = '#1e1e2f'
+SECONDARY_BG = '#2b2d42'
+ACCENT_COLOR = '#3a86ff'
+PROGRESS_COLOR = '#00d1b2'
+TEXT_COLOR = '#f0f0f0'
+
 class DeathClockGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Death Clock - Time Remaining Calculator")
         self.root.geometry("1920x1080")
-        self.root.configure(bg='#2c3e50')
+        self.root.configure(bg=PRIMARY_BG)
         
         # Variables
         self.death_date = None
@@ -33,15 +40,17 @@ class DeathClockGUI:
         # Style configuration
         style = ttk.Style()
         style.theme_use('clam')
-        style.configure('Title.TLabel', font=('Arial', 20, 'bold'), background='#2c3e50', foreground='#ecf0f1')
-        style.configure('Input.TLabel', font=('Arial', 12), background='#2c3e50', foreground='#bdc3c7')
-        style.configure('Time.TLabel', font=('Arial', 48, 'bold'), background='#34495e', foreground='#3498db')  # Even bigger
-        style.configure('Clock.TLabel', font=('Courier New', 52, 'bold'), background='#1a252f', foreground='#00ff41')
-        style.configure('Stats.TLabel', font=('Arial', 14, 'bold'), background='#34495e', foreground='#f39c12')  # Bigger stats
-        style.configure('Analysis.TLabel', font=('Arial', 13), background='#34495e', foreground='#e67e22')  # Bigger analysis
-        style.configure('Vital.TLabel', font=('Arial', 16, 'bold'), background='#34495e', foreground='#e74c3c')  # Bigger vital
-        style.configure('Custom.TButton', font=('Arial', 12, 'bold'), padding=12)
-        style.configure('Watermark.TLabel', font=('Arial', 8, 'italic'), background='#2c3e50', foreground='#7f8c8d')
+        style.configure('Title.TLabel', font=('Helvetica', 22, 'bold'), background=PRIMARY_BG, foreground=ACCENT_COLOR)
+        style.configure('Input.TLabel', font=('Helvetica', 12), background=PRIMARY_BG, foreground=TEXT_COLOR)
+        style.configure('Time.TLabel', font=('Helvetica', 48, 'bold'), background=SECONDARY_BG, foreground=ACCENT_COLOR)
+        style.configure('Clock.TLabel', font=('Courier New', 52, 'bold'), background='#000000', foreground=ACCENT_COLOR)
+        style.configure('Stats.TLabel', font=('Helvetica', 15, 'bold'), background=SECONDARY_BG, foreground='#f39c12')
+        style.configure('Analysis.TLabel', font=('Helvetica', 14), background=SECONDARY_BG, foreground='#e67e22')
+        style.configure('Vital.TLabel', font=('Helvetica', 17, 'bold'), background=SECONDARY_BG, foreground='#e74c3c')
+        style.configure('Custom.TButton', font=('Helvetica', 12, 'bold'), padding=12)
+        style.configure('Watermark.TLabel', font=('Helvetica', 8, 'italic'), background=PRIMARY_BG, foreground='#7f8c8d')
+        style.configure('Life.Horizontal.TProgressbar', troughcolor=PRIMARY_BG,
+                        background=PROGRESS_COLOR, thickness=20)
         
         self.create_widgets()
         
@@ -261,7 +270,7 @@ class DeathClockGUI:
         cal_window = tk.Toplevel(self.root)
         cal_window.title("Select Birth Date")
         cal_window.geometry("300x250")
-        cal_window.configure(bg='#34495e')
+        cal_window.configure(bg=SECONDARY_BG)
         cal_window.transient(self.root)
         cal_window.grab_set()
         
@@ -269,10 +278,17 @@ class DeathClockGUI:
         cal_window.geometry("+%d+%d" % (self.root.winfo_rootx() + 50, self.root.winfo_rooty() + 50))
         
         # Calendar widget
-        cal = Calendar(cal_window, selectmode='day', background='#34495e', 
-                      foreground='white', bordercolor='#2c3e50',
-                      headersbackground='#2c3e50', headersforeground='white',
-                      selectbackground='#3498db', selectforeground='white')
+        cal = Calendar(
+            cal_window,
+            selectmode='day',
+            background=SECONDARY_BG,
+            foreground='white',
+            bordercolor=PRIMARY_BG,
+            headersbackground=PRIMARY_BG,
+            headersforeground='white',
+            selectbackground=ACCENT_COLOR,
+            selectforeground='white'
+        )
         cal.pack(pady=20, padx=20)
         
         def select_date():
@@ -288,7 +304,7 @@ class DeathClockGUI:
                 messagebox.showerror("Error", "Invalid date selected")
         
         # Buttons
-        btn_frame = tk.Frame(cal_window, bg='#34495e')
+        btn_frame = tk.Frame(cal_window, bg=SECONDARY_BG)
         btn_frame.pack(pady=10)
         
         select_btn = ttk.Button(btn_frame, text="Select", command=select_date)
@@ -298,22 +314,39 @@ class DeathClockGUI:
         cancel_btn.pack(side='left', padx=5)
         
     def create_widgets(self):
+        # Menu bar for basic actions
+        menu_bar = tk.Menu(self.root)
+        self.root.config(menu=menu_bar)
+
+        file_menu = tk.Menu(menu_bar, tearoff=0)
+        file_menu.add_command(label="Exit", command=self.root.quit)
+        menu_bar.add_cascade(label="File", menu=file_menu)
+
+        help_menu = tk.Menu(menu_bar, tearoff=0)
+        help_menu.add_command(label="About", command=self.show_about)
+        menu_bar.add_cascade(label="Help", menu=help_menu)
+
         # Title
         title_label = ttk.Label(self.root, text="💀 DEATH CLOCK CALCULATOR 💀", style='Title.TLabel')
         title_label.pack(pady=25)
         
         # Input frame with better styling
-        input_frame = tk.Frame(self.root, bg='#34495e', relief='groove', bd=2)
+        input_frame = tk.Frame(self.root, bg=SECONDARY_BG, relief='groove', bd=2)
         input_frame.pack(pady=20, padx=30, fill='x')
         
-        input_title = ttk.Label(input_frame, text="📝 PERSONAL INFORMATION", font=('Arial', 12, 'bold'), 
-                               background='#34495e', foreground='#ecf0f1')
+        input_title = ttk.Label(
+            input_frame,
+            text="📝 PERSONAL INFORMATION",
+            font=('Helvetica', 12, 'bold'),
+            background=SECONDARY_BG,
+            foreground=TEXT_COLOR,
+        )
         input_title.grid(row=0, column=0, columnspan=2, pady=10)
         
         ttk.Label(input_frame, text="Date of Birth:", style='Input.TLabel').grid(row=1, column=0, padx=15, pady=8, sticky='w')
         
         # Date input with calendar option
-        date_input_frame = tk.Frame(input_frame, bg='#34495e')
+        date_input_frame = tk.Frame(input_frame, bg=SECONDARY_BG)
         date_input_frame.grid(row=1, column=1, padx=15, pady=8, sticky='w')
         
         self.birth_date_entry = ttk.Entry(date_input_frame, font=('Arial', 12), width=15)
@@ -325,13 +358,18 @@ class DeathClockGUI:
             calendar_btn.pack(side='left')
             
         # Format hint
-        format_hint = ttk.Label(input_frame, text="(DD/MM/YYYY)", font=('Arial', 9, 'italic'), 
-                               background='#34495e', foreground='#95a5a6')
+        format_hint = ttk.Label(
+            input_frame,
+            text="(DD/MM/YYYY)",
+            font=('Helvetica', 9, 'italic'),
+            background=SECONDARY_BG,
+            foreground='#95a5a6',
+        )
         format_hint.grid(row=1, column=2, padx=5, pady=8, sticky='w')
         
         ttk.Label(input_frame, text="Gender:", style='Input.TLabel').grid(row=2, column=0, padx=15, pady=8, sticky='w')
         self.gender_var = tk.StringVar(value="Male")
-        gender_frame = tk.Frame(input_frame, bg='#34495e')
+        gender_frame = tk.Frame(input_frame, bg=SECONDARY_BG)
         gender_frame.grid(row=2, column=1, padx=15, pady=8, sticky='w')
         ttk.Radiobutton(gender_frame, text="Male", variable=self.gender_var, value="Male").pack(side='left', padx=5)
         ttk.Radiobutton(gender_frame, text="Female", variable=self.gender_var, value="Female").pack(side='left', padx=5)
@@ -352,14 +390,19 @@ class DeathClockGUI:
         calculate_btn.grid(row=5, column=0, columnspan=2, pady=15)
         
         # Display format selection - more compact
-        format_frame = tk.Frame(self.root, bg='#2c3e50')
+        format_frame = tk.Frame(self.root, bg=PRIMARY_BG)
         format_frame.pack(pady=15)
         
-        ttk.Label(format_frame, text="🎯 Display Format:", font=('Arial', 11, 'bold'), 
-                 background='#2c3e50', foreground='#ecf0f1').pack()
+        ttk.Label(
+            format_frame,
+            text="🎯 Display Format:",
+            font=('Helvetica', 11, 'bold'),
+            background=PRIMARY_BG,
+            foreground=TEXT_COLOR,
+        ).pack()
         
         # Create a more compact radio button layout
-        radio_frame = tk.Frame(format_frame, bg='#2c3e50')
+        radio_frame = tk.Frame(format_frame, bg=PRIMARY_BG)
         radio_frame.pack(pady=5)
         
         format_options = [
@@ -381,7 +424,7 @@ class DeathClockGUI:
         self.death_date_label.pack(pady=8)
         
         # Main time information frame - enhanced styling
-        time_info_frame = tk.Frame(self.root, bg='#1a252f', relief='sunken', bd=3)
+        time_info_frame = tk.Frame(self.root, bg=SECONDARY_BG, relief='sunken', bd=3)
         time_info_frame.pack(pady=15, padx=20, fill='x')
         
         # Digital clock display (matrix-style)
@@ -401,85 +444,102 @@ class DeathClockGUI:
         clock_border.pack(fill='x', padx=50, pady=(0, 15))
         
         # Life progress display
-        progress_frame = tk.Frame(time_info_frame, bg='#1a252f')
+        progress_frame = tk.Frame(time_info_frame, bg=SECONDARY_BG)
         progress_frame.pack(pady=10, fill='x')
         
         self.life_progress_label = ttk.Label(progress_frame, text="", style='Input.TLabel')
         self.life_progress_label.pack()
+        self.life_progress_bar = ttk.Progressbar(
+            progress_frame,
+            style='Life.Horizontal.TProgressbar',
+            length=400,
+            maximum=100,
+        )
+        self.life_progress_bar.pack(pady=5)
         
         # Main countdown display - enhanced with frame and styling
-        countdown_frame = tk.Frame(time_info_frame, bg='#34495e', relief='ridge', bd=2)
+        countdown_frame = tk.Frame(time_info_frame, bg=SECONDARY_BG, relief='ridge', bd=2)
         countdown_frame.pack(pady=20, padx=20, fill='x')
         
-        countdown_title = ttk.Label(countdown_frame, text="🔥 DETAILED COUNTDOWN", font=('Arial', 18, 'bold'), 
-                                   background='#34495e', foreground='#3498db')
+        countdown_title = ttk.Label(
+            countdown_frame,
+            text="🔥 DETAILED COUNTDOWN",
+            font=('Helvetica', 18, 'bold'),
+            background=SECONDARY_BG,
+            foreground=ACCENT_COLOR,
+        )
         countdown_title.pack(pady=(15, 8))
         
         self.countdown_label = ttk.Label(countdown_frame, text="Enter your birth date to see countdown", style='Time.TLabel')
         self.countdown_label.pack(pady=(8, 20))
         
         # Statistics and Analysis Section - Enhanced with larger size
-        stats_frame = tk.Frame(time_info_frame, bg='#34495e', relief='raised', bd=4)
+        stats_frame = tk.Frame(time_info_frame, bg=SECONDARY_BG, relief='raised', bd=4)
         stats_frame.pack(pady=20, padx=20, fill='both', expand=True)
         
-        stats_title = ttk.Label(stats_frame, text="📊 COMPREHENSIVE STATISTICAL ANALYSIS", font=('Arial', 16, 'bold'), 
-                               background='#34495e', foreground='#f39c12')
+        stats_title = ttk.Label(
+            stats_frame,
+            text="📊 COMPREHENSIVE STATISTICAL ANALYSIS",
+            font=('Helvetica', 16, 'bold'),
+            background=SECONDARY_BG,
+            foreground='#f39c12',
+        )
         stats_title.pack(pady=15)
         
         # Create multiple rows for better organization with increased spacing
-        stats_row1 = tk.Frame(stats_frame, bg='#34495e')
+        stats_row1 = tk.Frame(stats_frame, bg=SECONDARY_BG)
         stats_row1.pack(pady=12, fill='x', padx=20)
         
         self.time_stats_label = ttk.Label(stats_row1, text="", style='Stats.TLabel')
         self.time_stats_label.pack(pady=8)
         
-        stats_row2 = tk.Frame(stats_frame, bg='#34495e')
+        stats_row2 = tk.Frame(stats_frame, bg=SECONDARY_BG)
         stats_row2.pack(pady=12, fill='x', padx=20)
         
         # Vital signs with larger, more prominent display
         self.vital_stats_label = ttk.Label(stats_row2, text="", style='Vital.TLabel')
         self.vital_stats_label.pack(pady=10)
         
-        stats_row3 = tk.Frame(stats_frame, bg='#34495e')
+        stats_row3 = tk.Frame(stats_frame, bg=SECONDARY_BG)
         stats_row3.pack(pady=12, fill='x', padx=20)
         
         self.analysis_label = ttk.Label(stats_row3, text="", style='Analysis.TLabel')
         self.analysis_label.pack(pady=8)
         
-        stats_row4 = tk.Frame(stats_frame, bg='#34495e')
+        stats_row4 = tk.Frame(stats_frame, bg=SECONDARY_BG)
         stats_row4.pack(pady=12, fill='x', padx=20)
         
         self.demographic_label = ttk.Label(stats_row4, text="", style='Analysis.TLabel')
         self.demographic_label.pack(pady=8)
         
-        stats_row5 = tk.Frame(stats_frame, bg='#34495e')
+        stats_row5 = tk.Frame(stats_frame, bg=SECONDARY_BG)
         stats_row5.pack(pady=12, fill='x', padx=20)
         
         self.milestones_label = ttk.Label(stats_row5, text="", style='Analysis.TLabel')
         self.milestones_label.pack(pady=8)
         
         # New enhanced analysis sections
-        stats_row6 = tk.Frame(stats_frame, bg='#34495e')
+        stats_row6 = tk.Frame(stats_frame, bg=SECONDARY_BG)
         stats_row6.pack(pady=12, fill='x', padx=20)
         
         self.life_quality_label = ttk.Label(stats_row6, text="", style='Analysis.TLabel')
         self.life_quality_label.pack(pady=8)
         
-        stats_row7 = tk.Frame(stats_frame, bg='#34495e')
+        stats_row7 = tk.Frame(stats_frame, bg=SECONDARY_BG)
         stats_row7.pack(pady=12, fill='x', padx=20)
         
         self.perspective_label = ttk.Label(stats_row7, text="", style='Analysis.TLabel')
         self.perspective_label.pack(pady=8)
         
         # Additional fun facts section
-        stats_row8 = tk.Frame(stats_frame, bg='#34495e')
+        stats_row8 = tk.Frame(stats_frame, bg=SECONDARY_BG)
         stats_row8.pack(pady=12, fill='x', padx=20)
         
         self.fun_facts_label = ttk.Label(stats_row8, text="", style='Analysis.TLabel')
         self.fun_facts_label.pack(pady=(8, 25))
         
         # Control buttons - simplified
-        button_frame = tk.Frame(self.root, bg='#2c3e50')
+        button_frame = tk.Frame(self.root, bg=PRIMARY_BG)
         button_frame.pack(pady=20)
         
         self.stop_btn = ttk.Button(button_frame, text="⏸️ PAUSE COUNTDOWN", command=self.stop_countdown, style='Custom.TButton')
@@ -487,18 +547,36 @@ class DeathClockGUI:
         
         self.restart_btn = ttk.Button(button_frame, text="🔄 RESTART", command=self.restart_countdown, style='Custom.TButton')
         self.restart_btn.pack(side='left', padx=15)
+
+        self.copy_btn = ttk.Button(button_frame, text="📋 COPY STATS", command=self.copy_stats, style='Custom.TButton')
+        self.copy_btn.pack(side='left', padx=15)
+
+        self.reset_btn = ttk.Button(button_frame, text="🗑️ RESET", command=self.reset_fields, style='Custom.TButton')
+        self.reset_btn.pack(side='left', padx=15)
         
         # Status label
-        self.status_label = ttk.Label(self.root, text="Ready - Enter your details above", 
-                                     font=('Arial', 10, 'italic'), background="#2d77a8", foreground='#95a5a6')
+        self.status_label = ttk.Label(
+            self.root,
+            text="Ready - Enter your details above",
+            font=('Helvetica', 10, 'italic'),
+            background=PRIMARY_BG,
+            foreground='#95a5a6',
+        )
         self.status_label.pack(pady=8)
         
         # Watermark at the bottom
-        watermark_frame = tk.Frame(self.root, bg='#2c3e50')
+        watermark_frame = tk.Frame(self.root, bg=PRIMARY_BG)
         watermark_frame.pack(side='bottom', fill='x')
         
         watermark_label = ttk.Label(watermark_frame, text="Created by Eran", style='Watermark.TLabel')
         watermark_label.pack(side='bottom', padx=20, pady=5)
+
+    def show_about(self):
+        """Display application information"""
+        messagebox.showinfo(
+            "About",
+            "Death Clock\nEstimate your remaining time.\nCreated by Eran",
+        )
 
     def calculate_death_date(self):
         try:
@@ -566,13 +644,9 @@ class DeathClockGUI:
         progress_percentage = (lived_seconds / total_life_seconds) * 100
         age_years = lived_seconds / (365.25 * 24 * 3600)
         
-        # Create a visual progress bar using characters
-        bar_length = 30
-        filled_length = int(bar_length * progress_percentage / 100)
-        bar = "█" * filled_length + "░" * (bar_length - filled_length)
-        
+        self.life_progress_bar['value'] = progress_percentage
         self.life_progress_label.config(
-            text=f"Life Progress: {bar} {progress_percentage:.1f}% | Age: {age_years:.1f} years"
+            text=f"Life Progress: {progress_percentage:.1f}% | Age: {age_years:.1f} years"
         )
     
     def update_static_countdown(self):
@@ -719,10 +793,17 @@ class DeathClockGUI:
             meals_remaining = total_days * 3  # 3 meals per day
             weekends_remaining = total_weeks * 2  # 2 weekend days per week
             
-            analysis_text = (f"😴 ~{sleep_hours_remaining:,} hours of sleep | "
-                           f"☀️ ~{awake_hours_remaining:,} awake hours | "
-                           f"🍽️ ~{meals_remaining:,} meals | "
-                           f"🎉 ~{weekends_remaining:,} weekend days")
+            work_hours_remaining = total_days * 8
+            vacation_days_remaining = int(total_years * 20)
+
+            analysis_text = (
+                f"😴 ~{sleep_hours_remaining:,} hours of sleep | "
+                f"☀️ ~{awake_hours_remaining:,} awake hours | "
+                f"🍽️ ~{meals_remaining:,} meals | "
+                f"🎉 ~{weekends_remaining:,} weekend days | "
+                f"💼 ~{work_hours_remaining:,} work hours | "
+                f"✈️ ~{vacation_days_remaining:,} vacation days"
+            )
             self.analysis_label.config(text=analysis_text)
             
             # Demographic comparisons
@@ -868,6 +949,49 @@ class DeathClockGUI:
     def stop_countdown(self):
         self.is_running = False
         self.status_label.config(text="⏸️ Countdown paused")
+
+    def copy_stats(self):
+        """Copy current statistics to clipboard"""
+        if not self.death_date:
+            messagebox.showinfo("Info", "No data to copy. Calculate first.")
+            return
+        stats = "\n".join([
+            self.time_stats_label.cget("text"),
+            self.vital_stats_label.cget("text"),
+            self.analysis_label.cget("text"),
+            self.demographic_label.cget("text"),
+            self.milestones_label.cget("text"),
+            self.life_quality_label.cget("text"),
+            self.perspective_label.cget("text"),
+            self.fun_facts_label.cget("text"),
+        ])
+        self.root.clipboard_clear()
+        self.root.clipboard_append(stats)
+        messagebox.showinfo("Copied", "Statistics copied to clipboard")
+
+    def reset_fields(self):
+        """Reset input fields and clear data"""
+        self.stop_countdown()
+        self.birth_date_entry.delete(0, tk.END)
+        self.lifespan_entry.delete(0, tk.END)
+        self.gender_var.set("Male")
+        self.country_var.set("Global Average")
+        self.death_date_label.config(text="")
+        for lbl in [
+            self.countdown_label,
+            self.clock_label,
+            self.time_stats_label,
+            self.analysis_label,
+            self.demographic_label,
+            self.milestones_label,
+            self.life_quality_label,
+            self.perspective_label,
+            self.fun_facts_label,
+        ]:
+            lbl.config(text="")
+        self.status_label.config(text="Ready - Enter your details above")
+        self.life_progress_label.config(text="")
+        self.life_progress_bar["value"] = 0
     
     def update_countdown(self):
         while self.is_running:
