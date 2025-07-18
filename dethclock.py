@@ -3,6 +3,11 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime, timedelta
 import threading
+try:
+    from tkcalendar import Calendar
+    CALENDAR_AVAILABLE = True
+except ImportError:
+    CALENDAR_AVAILABLE = False
 
 class DeathClockGUI:
     def __init__(self, root):
@@ -28,14 +33,14 @@ class DeathClockGUI:
         # Style configuration
         style = ttk.Style()
         style.theme_use('clam')
-        style.configure('Title.TLabel', font=('Arial', 18, 'bold'), background='#2c3e50', foreground='#ecf0f1')
-        style.configure('Input.TLabel', font=('Arial', 11), background='#2c3e50', foreground='#bdc3c7')
-        style.configure('Time.TLabel', font=('Arial', 32, 'bold'), background='#34495e', foreground='#e74c3c')
-        style.configure('Clock.TLabel', font=('Courier New', 48, 'bold'), background='#1a252f', foreground='#00ff41')
-        style.configure('Stats.TLabel', font=('Arial', 12), background='#34495e', foreground='#f39c12')
-        style.configure('Analysis.TLabel', font=('Arial', 11), background='#34495e', foreground='#e67e22')
-        style.configure('Vital.TLabel', font=('Arial', 14, 'bold'), background='#34495e', foreground='#e74c3c')
-        style.configure('Custom.TButton', font=('Arial', 11, 'bold'), padding=10)
+        style.configure('Title.TLabel', font=('Arial', 20, 'bold'), background='#2c3e50', foreground='#ecf0f1')
+        style.configure('Input.TLabel', font=('Arial', 12), background='#2c3e50', foreground='#bdc3c7')
+        style.configure('Time.TLabel', font=('Arial', 48, 'bold'), background='#34495e', foreground='#3498db')  # Even bigger
+        style.configure('Clock.TLabel', font=('Courier New', 52, 'bold'), background='#1a252f', foreground='#00ff41')
+        style.configure('Stats.TLabel', font=('Arial', 14, 'bold'), background='#34495e', foreground='#f39c12')  # Bigger stats
+        style.configure('Analysis.TLabel', font=('Arial', 13), background='#34495e', foreground='#e67e22')  # Bigger analysis
+        style.configure('Vital.TLabel', font=('Arial', 16, 'bold'), background='#34495e', foreground='#e74c3c')  # Bigger vital
+        style.configure('Custom.TButton', font=('Arial', 12, 'bold'), padding=12)
         style.configure('Watermark.TLabel', font=('Arial', 8, 'italic'), background='#2c3e50', foreground='#7f8c8d')
         
         self.create_widgets()
@@ -245,6 +250,52 @@ class DeathClockGUI:
         
         data = life_expectancy_data.get(country, life_expectancy_data["Global Average"])
         return data[0] if gender == "Male" else data[1]
+    
+    def open_calendar(self):
+        """Open calendar widget for date selection"""
+        if not CALENDAR_AVAILABLE:
+            messagebox.showwarning("Calendar Not Available", "Please install tkcalendar package")
+            return
+            
+        # Create calendar popup window
+        cal_window = tk.Toplevel(self.root)
+        cal_window.title("Select Birth Date")
+        cal_window.geometry("300x250")
+        cal_window.configure(bg='#34495e')
+        cal_window.transient(self.root)
+        cal_window.grab_set()
+        
+        # Center the window
+        cal_window.geometry("+%d+%d" % (self.root.winfo_rootx() + 50, self.root.winfo_rooty() + 50))
+        
+        # Calendar widget
+        cal = Calendar(cal_window, selectmode='day', background='#34495e', 
+                      foreground='white', bordercolor='#2c3e50',
+                      headersbackground='#2c3e50', headersforeground='white',
+                      selectbackground='#3498db', selectforeground='white')
+        cal.pack(pady=20, padx=20)
+        
+        def select_date():
+            selected_date = cal.get_date()
+            # Convert from MM/DD/YY to DD/MM/YYYY format
+            try:
+                date_obj = datetime.strptime(selected_date, "%m/%d/%y")
+                formatted_date = date_obj.strftime("%d/%m/%Y")
+                self.birth_date_entry.delete(0, tk.END)
+                self.birth_date_entry.insert(0, formatted_date)
+                cal_window.destroy()
+            except:
+                messagebox.showerror("Error", "Invalid date selected")
+        
+        # Buttons
+        btn_frame = tk.Frame(cal_window, bg='#34495e')
+        btn_frame.pack(pady=10)
+        
+        select_btn = ttk.Button(btn_frame, text="Select", command=select_date)
+        select_btn.pack(side='left', padx=5)
+        
+        cancel_btn = ttk.Button(btn_frame, text="Cancel", command=cal_window.destroy)
+        cancel_btn.pack(side='left', padx=5)
         
     def create_widgets(self):
         # Title
@@ -259,9 +310,24 @@ class DeathClockGUI:
                                background='#34495e', foreground='#ecf0f1')
         input_title.grid(row=0, column=0, columnspan=2, pady=10)
         
-        ttk.Label(input_frame, text="Date of Birth (DD/MM/YYYY):", style='Input.TLabel').grid(row=1, column=0, padx=15, pady=8, sticky='w')
-        self.birth_date_entry = ttk.Entry(input_frame, font=('Arial', 12), width=18)
-        self.birth_date_entry.grid(row=1, column=1, padx=15, pady=8)
+        ttk.Label(input_frame, text="Date of Birth:", style='Input.TLabel').grid(row=1, column=0, padx=15, pady=8, sticky='w')
+        
+        # Date input with calendar option
+        date_input_frame = tk.Frame(input_frame, bg='#34495e')
+        date_input_frame.grid(row=1, column=1, padx=15, pady=8, sticky='w')
+        
+        self.birth_date_entry = ttk.Entry(date_input_frame, font=('Arial', 12), width=15)
+        self.birth_date_entry.pack(side='left', padx=(0, 5))
+        
+        # Calendar button
+        if CALENDAR_AVAILABLE:
+            calendar_btn = ttk.Button(date_input_frame, text="📅", width=3, command=self.open_calendar)
+            calendar_btn.pack(side='left')
+            
+        # Format hint
+        format_hint = ttk.Label(input_frame, text="(DD/MM/YYYY)", font=('Arial', 9, 'italic'), 
+                               background='#34495e', foreground='#95a5a6')
+        format_hint.grid(row=1, column=2, padx=5, pady=8, sticky='w')
         
         ttk.Label(input_frame, text="Gender:", style='Input.TLabel').grid(row=2, column=0, padx=15, pady=8, sticky='w')
         self.gender_var = tk.StringVar(value="Male")
@@ -302,7 +368,8 @@ class DeathClockGUI:
             ("Days & Hours", "days_hours"),
             ("Total Days", "total_days"),
             ("Total Hours", "total_hours"),
-            ("Total Minutes", "total_minutes")
+            ("Total Minutes", "total_minutes"),
+            ("Total Seconds", "total_seconds")
         ]
         
         for i, (text, value) in enumerate(format_options):
@@ -344,84 +411,94 @@ class DeathClockGUI:
         countdown_frame = tk.Frame(time_info_frame, bg='#34495e', relief='ridge', bd=2)
         countdown_frame.pack(pady=20, padx=20, fill='x')
         
-        countdown_title = ttk.Label(countdown_frame, text="🔥 DETAILED COUNTDOWN", font=('Arial', 14, 'bold'), 
-                                   background='#34495e', foreground='#e74c3c')
-        countdown_title.pack(pady=(10, 5))
+        countdown_title = ttk.Label(countdown_frame, text="🔥 DETAILED COUNTDOWN", font=('Arial', 18, 'bold'), 
+                                   background='#34495e', foreground='#3498db')
+        countdown_title.pack(pady=(15, 8))
         
         self.countdown_label = ttk.Label(countdown_frame, text="Enter your birth date to see countdown", style='Time.TLabel')
-        self.countdown_label.pack(pady=(5, 15))
+        self.countdown_label.pack(pady=(8, 20))
         
         # Statistics and Analysis Section - Enhanced with larger size
-        stats_frame = tk.Frame(time_info_frame, bg='#34495e', relief='raised', bd=3)
-        stats_frame.pack(pady=15, padx=15, fill='both', expand=True)
+        stats_frame = tk.Frame(time_info_frame, bg='#34495e', relief='raised', bd=4)
+        stats_frame.pack(pady=20, padx=20, fill='both', expand=True)
         
-        stats_title = ttk.Label(stats_frame, text="📊 COMPREHENSIVE STATISTICAL ANALYSIS", font=('Arial', 14, 'bold'), 
+        stats_title = ttk.Label(stats_frame, text="📊 COMPREHENSIVE STATISTICAL ANALYSIS", font=('Arial', 16, 'bold'), 
                                background='#34495e', foreground='#f39c12')
-        stats_title.pack(pady=12)
+        stats_title.pack(pady=15)
         
-        # Create multiple rows for better organization
+        # Create multiple rows for better organization with increased spacing
         stats_row1 = tk.Frame(stats_frame, bg='#34495e')
-        stats_row1.pack(pady=8, fill='x')
+        stats_row1.pack(pady=12, fill='x', padx=20)
         
         self.time_stats_label = ttk.Label(stats_row1, text="", style='Stats.TLabel')
-        self.time_stats_label.pack(pady=5)
+        self.time_stats_label.pack(pady=8)
         
         stats_row2 = tk.Frame(stats_frame, bg='#34495e')
-        stats_row2.pack(pady=8, fill='x')
+        stats_row2.pack(pady=12, fill='x', padx=20)
         
         # Vital signs with larger, more prominent display
         self.vital_stats_label = ttk.Label(stats_row2, text="", style='Vital.TLabel')
-        self.vital_stats_label.pack(pady=8)
+        self.vital_stats_label.pack(pady=10)
         
         stats_row3 = tk.Frame(stats_frame, bg='#34495e')
-        stats_row3.pack(pady=8, fill='x')
+        stats_row3.pack(pady=12, fill='x', padx=20)
         
         self.analysis_label = ttk.Label(stats_row3, text="", style='Analysis.TLabel')
-        self.analysis_label.pack(pady=5)
+        self.analysis_label.pack(pady=8)
         
         stats_row4 = tk.Frame(stats_frame, bg='#34495e')
-        stats_row4.pack(pady=8, fill='x')
+        stats_row4.pack(pady=12, fill='x', padx=20)
         
         self.demographic_label = ttk.Label(stats_row4, text="", style='Analysis.TLabel')
-        self.demographic_label.pack(pady=5)
+        self.demographic_label.pack(pady=8)
         
         stats_row5 = tk.Frame(stats_frame, bg='#34495e')
-        stats_row5.pack(pady=8, fill='x')
+        stats_row5.pack(pady=12, fill='x', padx=20)
         
         self.milestones_label = ttk.Label(stats_row5, text="", style='Analysis.TLabel')
-        self.milestones_label.pack(pady=5)
+        self.milestones_label.pack(pady=8)
         
         # New enhanced analysis sections
         stats_row6 = tk.Frame(stats_frame, bg='#34495e')
-        stats_row6.pack(pady=8, fill='x')
+        stats_row6.pack(pady=12, fill='x', padx=20)
         
         self.life_quality_label = ttk.Label(stats_row6, text="", style='Analysis.TLabel')
-        self.life_quality_label.pack(pady=5)
+        self.life_quality_label.pack(pady=8)
         
         stats_row7 = tk.Frame(stats_frame, bg='#34495e')
-        stats_row7.pack(pady=8, fill='x')
+        stats_row7.pack(pady=12, fill='x', padx=20)
         
         self.perspective_label = ttk.Label(stats_row7, text="", style='Analysis.TLabel')
-        self.perspective_label.pack(pady=(5, 15))
+        self.perspective_label.pack(pady=8)
+        
+        # Additional fun facts section
+        stats_row8 = tk.Frame(stats_frame, bg='#34495e')
+        stats_row8.pack(pady=12, fill='x', padx=20)
+        
+        self.fun_facts_label = ttk.Label(stats_row8, text="", style='Analysis.TLabel')
+        self.fun_facts_label.pack(pady=(8, 25))
         
         # Control buttons - simplified
         button_frame = tk.Frame(self.root, bg='#2c3e50')
-        button_frame.pack(pady=15)
+        button_frame.pack(pady=20)
         
         self.stop_btn = ttk.Button(button_frame, text="⏸️ PAUSE COUNTDOWN", command=self.stop_countdown, style='Custom.TButton')
-        self.stop_btn.pack(side='left', padx=10)
+        self.stop_btn.pack(side='left', padx=15)
         
         self.restart_btn = ttk.Button(button_frame, text="🔄 RESTART", command=self.restart_countdown, style='Custom.TButton')
-        self.restart_btn.pack(side='left', padx=10)
+        self.restart_btn.pack(side='left', padx=15)
         
         # Status label
         self.status_label = ttk.Label(self.root, text="Ready - Enter your details above", 
                                      font=('Arial', 10, 'italic'), background="#2d77a8", foreground='#95a5a6')
         self.status_label.pack(pady=8)
         
-        # Watermark
-        watermark_label = ttk.Label(self.root, text="Created by Eran", style='Watermark.TLabel')
-        watermark_label.pack(side='bottom', anchor='se', padx=10, pady=5)
+        # Watermark at the bottom
+        watermark_frame = tk.Frame(self.root, bg='#2c3e50')
+        watermark_frame.pack(side='bottom', fill='x')
+        
+        watermark_label = ttk.Label(watermark_frame, text="Created by Eran", style='Watermark.TLabel')
+        watermark_label.pack(side='bottom', padx=20, pady=5)
 
     def calculate_death_date(self):
         try:
@@ -526,14 +603,14 @@ class DeathClockGUI:
         total_seconds = int(time_left.total_seconds())
         days = total_seconds // (24 * 3600)
         
-        if days <= 7:  # Less than a week - red alert
+        if days <= 7:  # Less than a week - bright red alert
             self.countdown_label.config(foreground='#ff0000')
         elif days <= 30:  # Less than a month - orange warning
             self.countdown_label.config(foreground='#ff8800')
         elif days <= 365:  # Less than a year - yellow caution
-            self.countdown_label.config(foreground='#ffff00')
-        else:  # Normal red
-            self.countdown_label.config(foreground='#e74c3c')
+            self.countdown_label.config(foreground='#f1c40f')
+        else:  # Normal blue instead of red
+            self.countdown_label.config(foreground='#3498db')
         
         # Update statistics and analysis
         self.update_statistics_and_analysis(time_left)
@@ -693,29 +770,65 @@ class DeathClockGUI:
             books_readable = total_days // 7  # 1 book per week
             movies_watchable = total_hours // 2  # 2-hour movies
             conversations = total_days * 5  # 5 meaningful conversations per day
+            steps_remaining = total_days * 8000  # Average 8000 steps per day
             
             quality_text = (f"📚 ~{books_readable:,} books to read | "
                            f"🎬 ~{movies_watchable:,} movies to watch | "
-                           f"💬 ~{conversations:,} conversations ahead")
+                           f"💬 ~{conversations:,} conversations | "
+                           f"👟 ~{steps_remaining:,} steps to take")
             self.life_quality_label.config(text=quality_text)
             
-            # Perspective and motivation
-            seconds_per_day = 86400
-            days_per_week = 7
-            weeks_per_year = 52
+            # Enhanced perspective and fascinating facts - optimized for long lifetimes
+            coffee_cups = total_days * 2  # 2 cups per day
+            sunrises = total_days  # One per day
+            hugs_possible = total_days * 3  # 3 hugs per day
+            laughs_remaining = total_days * 15  # 15 laughs per day
+            photos_to_take = total_days * 10  # 10 photos per day
+            songs_to_hear = total_hours * 15  # 15 songs per hour awake
             
-            if total_days > 1000:
-                perspective = f"🚀 Over 1,000 days ahead - enough time for major life changes!"
+            # Scale perspective messages for different time ranges
+            if total_years > 50:
+                perspective = (f"🌟 Over {total_years:.0f} years ahead! Epic lifetime for: ☕ {coffee_cups:,} coffee moments, "
+                             f"🌅 {sunrises:,} sunrises, 🤗 {hugs_possible:,} warm hugs, 😂 {laughs_remaining:,} joyful laughs")
+            elif total_years > 25:
+                perspective = (f"🚀 {total_years:.0f} years ahead! Enough time for: 🎵 {songs_to_hear:,} songs, "
+                             f"📸 {photos_to_take:,} precious photos, ☕ {coffee_cups:,} shared coffee moments")
+            elif total_days > 1000:
+                perspective = (f"🌱 Over 1,000 days ahead! Time for: ☕ {coffee_cups:,} coffees, "
+                             f"🌅 {sunrises:,} sunrises, 🤗 {hugs_possible:,} hugs, 😂 {laughs_remaining:,} laughs")
             elif total_days > 365:
-                perspective = f"🌱 Multiple seasons ahead - time to grow and evolve"
+                perspective = (f"🌱 Multiple seasons ahead! Time for: 🎵 {songs_to_hear:,} songs, "
+                             f"📸 {photos_to_take:,} photos, ☕ {coffee_cups:,} coffee moments")
             elif total_days > 100:
-                perspective = f"⚡ Focused time ahead - make every day count!"
+                perspective = (f"⚡ Focused time ahead! Potential for: 🤗 {hugs_possible:,} hugs, "
+                             f"😂 {laughs_remaining:,} moments of laughter, 🌅 {sunrises:,} beautiful sunrises")
             elif total_days > 30:
-                perspective = f"🔥 Precious weeks ahead - time for urgent priorities"
+                perspective = (f"🔥 Precious weeks ahead! Cherish: ☕ {coffee_cups:,} warm drinks, "
+                             f"🎵 {songs_to_hear:,} amazing songs, 📸 {photos_to_take:,} memories to capture")
             else:
-                perspective = f"💎 Every moment is precious - live with intensity!"
+                perspective = (f"💎 Every moment is precious! Savor: 🤗 {hugs_possible:,} hugs, "
+                             f"😂 {laughs_remaining:,} laughs, 🌅 {sunrises:,} sunrises - make them count!")
                 
             self.perspective_label.config(text=perspective)
+            
+            # Additional fun facts and comparisons - enhanced for all lifespans
+            blinks_remaining = total_seconds * 0.33  # About 20 blinks per minute
+            words_to_speak = total_days * 16000  # Average 16,000 words per day
+            dreams_remaining = total_days * 4  # Average 4 dreams per night
+            years_in_space = total_years  # If you were on the International Space Station
+            
+            # Scale the display based on magnitude
+            if total_years > 20:
+                fun_facts = (f"👁️ ~{blinks_remaining/1000000:.1f}M blinks ahead | "
+                            f"🗣️ ~{words_to_speak/1000000:.1f}M words to speak | "
+                            f"💭 ~{dreams_remaining:,} dreams to have | "
+                            f"🚀 Equal to {years_in_space:.1f} years orbiting Earth!")
+            else:
+                fun_facts = (f"👁️ ~{blinks_remaining:,.0f} blinks ahead | "
+                            f"🗣️ ~{words_to_speak:,} words to speak | "
+                            f"💭 ~{dreams_remaining:,} dreams to have | "
+                            f"🚀 Equal to {years_in_space:.1f} years orbiting Earth!")
+            self.fun_facts_label.config(text=fun_facts)
         
     def start_countdown_automatically(self):
         """Start countdown automatically after calculation"""
@@ -789,9 +902,9 @@ class DeathClockGUI:
                 elif days_live <= 30:  # Less than a month - orange warning
                     self.root.after(0, lambda: self.countdown_label.config(foreground='#ff8800'))
                 elif days_live <= 365:  # Less than a year - yellow caution
-                    self.root.after(0, lambda: self.countdown_label.config(foreground='#ffff00'))
-                else:  # Normal red
-                    self.root.after(0, lambda: self.countdown_label.config(foreground='#e74c3c'))
+                    self.root.after(0, lambda: self.countdown_label.config(foreground='#f1c40f'))
+                else:  # Normal blue instead of red
+                    self.root.after(0, lambda: self.countdown_label.config(foreground='#3498db'))
                 
                 # Update statistics and analysis
                 self.root.after(0, lambda tl=time_left: self.update_statistics_and_analysis(tl))
