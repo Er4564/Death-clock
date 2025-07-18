@@ -6,4 +6,5 @@ An interactive death clock built with Tkinter. Enter your birth date and demogra
 - Countdown timer with detailed statistics
 - Progress bar showing percentage of life lived
 - Menu with About dialog and exit option
+- Multiple display formats including weeks and total weeks
 
