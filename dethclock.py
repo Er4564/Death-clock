@@ -440,6 +440,7 @@ class DeathClockGUI:
         time_info_frame.pack(pady=15, padx=20, fill='x')
         
 
+
         # Add a subtle border effect around the clock
         clock_border = tk.Frame(countdown_frame, bg='#00ff41', height=2)
         clock_border.pack(fill='x', padx=50, pady=(0, 15))
